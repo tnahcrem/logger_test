@@ -30,7 +30,7 @@ uint32_t logRxLen;
 
 
 /*****************************************************************************
-*    Function: void log_timeout(int signal)
+*    Function: void _log_timeout(int signal)
 *
 *    Abstract: The timeout callback of the timer
 *
@@ -39,36 +39,13 @@ uint32_t logRxLen;
 *    Return:
 *
 *****************************************************************************/
-void log_timeout(int signal)
+void _log_timeout(int signal)
 {
   logger_send();
 }
 
 /*****************************************************************************
-*    Function: void logger_init(void)
-*
-*    Abstract: Initialization function of logger
-*
-*    Input/Output:
-*
-*    Return:
-*
-*****************************************************************************/
-void logger_init(void)
-{
-    loggerStartPtr = (uint8_t*)malloc(LOG_MAX_SIZE); // initialize log memory
-    // init read write pointers
-    logWrIdx = loggerStartPtr;
-    logRdIdx = loggerStartPtr;
-    dumpFlag = 0;
-    logisFull = 0;
-    toLog = 0;
-    signal(SIGALRM, log_timeout); // on a RTOS based system change this to a more controlled form of timer
-
-}
-
-/*****************************************************************************
-*    Function: uint32_t logger_getSize(void)
+*    Function: uint32_t _logger_getSize(void)
 *
 *    Abstract: gets current size utilized by logger
 *
@@ -77,7 +54,7 @@ void logger_init(void)
 *    Return:
 *
 *****************************************************************************/
-uint32_t logger_getSize(void)
+uint32_t _logger_getSize(void)
 {
 
     if(logWrIdx == logRdIdx)
@@ -103,6 +80,31 @@ uint32_t logger_getSize(void)
 }
 
 /*****************************************************************************
+*    Function: void logger_init(void)
+*
+*    Abstract: Initialization function of logger
+*
+*    Input/Output:
+*
+*    Return:
+*
+*****************************************************************************/
+void logger_init(void)
+{
+    loggerStartPtr = (uint8_t*)malloc(LOG_MAX_SIZE); // initialize log memory
+    // init read write pointers
+    logWrIdx = loggerStartPtr;
+    logRdIdx = loggerStartPtr;
+    dumpFlag = 0;
+    logisFull = 0;
+    toLog = 0;
+    signal(SIGALRM, _log_timeout); // on a RTOS based system change this to a more controlled form of timer
+
+}
+
+
+
+/*****************************************************************************
 *    Function: void logger_send(void)
 *
 *    Abstract: Function to dump existing log to the output
@@ -123,9 +125,9 @@ void logger_send(void)
     fp = fopen( "log.bin" , "w" );
 
     // loop through the whole log memory
-    while(logger_getSize())
+    while(_logger_getSize())
     {
-        len = logger_getSize();
+        len = _logger_getSize();
 
        // check for wrap around
         if((logRdIdx + len) > LOG_END_ADDR)
@@ -216,7 +218,7 @@ LOG_EVT_t* logger_getPtr(LOG_TYP_e logType)
     // on a RTOS based system this can be used to trigger
     // a message to idle thread to start pushing out the logs
     // to make more room
-    if(logger_getSize() >= LOG_PUSH_THRESH)
+    if(_logger_getSize() >= LOG_PUSH_THRESH)
     {
         toLog = 1;
     }
