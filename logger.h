@@ -38,7 +38,6 @@ typedef enum
 #define LOG_TIMER 5
 
 void logger_init(void);
-uint32_t logger_getSize(void);
 void logger_send(void);
 LOG_EVT_t* logger_getPtr(LOG_TYP_e logType);
 
